@@ -1,6 +1,7 @@
 const classSelector = document.getElementById('class-select')
 const charImg = document.getElementById('char-img')
 const baseImgUrl = 'https://www.dndbeyond.com/attachments/thumbnails/0/'
+const profList = document.getElementById('proficiencies-list')
 const portraitMap = {
     'barbarian': '679/400/417/c3barbarianintro.png',
     'bard': '684/400/406/c3bardintro.png',
@@ -19,19 +20,31 @@ let request = async () => {
     // initiate request to dnd server
     let req = await fetch('https://www.dnd5eapi.co/api/classes')
     // get response from server and convert it to JSON
+    let name;
     let res = await req.json()
     res.results.forEach((char) => {
         let option = document.createElement('option')
         option.setAttribute('value', char.name)
         option.innerText = char.name
+        name = char.name
         classSelector.append(option)
     })
-    classSelector.addEventListener('change', (e) => {
+    
+    classSelector.addEventListener('change', async (e) => {
+        profList.classList.remove('hidden')
         document.getElementById('selected-class').innerText = e.target.value
         let src = `${baseImgUrl}${portraitMap[e.target.value.toLowerCase()]}`
         charImg.src = src
         charImg.classList.remove('hidden')
-        console.log(e.target.value)
+        req = await fetch(`https://www.dnd5eapi.co/api/classes/${e.target.value.toLowerCase()}`)
+        res = await req.json()
+        profList.innerHTML = ''
+        res.proficiencies.forEach((prof) => {
+            let li = document.createElement('li')
+            li.innerText = prof.name
+            profList.append(li)
+        })
+        // console.log(e.target.value)
     })
 }
 
